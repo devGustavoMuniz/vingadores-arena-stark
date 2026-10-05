@@ -1,6 +1,7 @@
 <?php
 
 use App\Inventory\Models\Event;
+use App\Inventory\Services\InventoryService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Redis;
@@ -49,7 +50,7 @@ describe('Ticket reservation flow (end-to-end)', function () {
         $event = Event::factory()->create(['available_tickets' => 10, 'status' => 'active']);
 
         // Warm Redis stock
-        app(\App\Inventory\Services\InventoryService::class)->warmStockCache($event->id);
+        app(InventoryService::class)->warmStockCache($event->id);
 
         $response = $this->actingAs($user)
             ->post('/orders/reserve', ['event_id' => $event->id]);
@@ -63,7 +64,7 @@ describe('Ticket reservation flow (end-to-end)', function () {
         $event = Event::factory()->create(['available_tickets' => 0, 'status' => 'active']);
 
         // Warm Redis stock at 0
-        app(\App\Inventory\Services\InventoryService::class)->warmStockCache($event->id);
+        app(InventoryService::class)->warmStockCache($event->id);
 
         $response = $this->actingAs($user)
             ->post('/orders/reserve', ['event_id' => $event->id]);
@@ -80,7 +81,7 @@ describe('Ticket reservation flow (end-to-end)', function () {
             'status' => 'active',
         ]);
 
-        $inventoryService = app(\App\Inventory\Services\InventoryService::class);
+        $inventoryService = app(InventoryService::class);
         $inventoryService->warmStockCache($event->id);
 
         // Step 1: reserve

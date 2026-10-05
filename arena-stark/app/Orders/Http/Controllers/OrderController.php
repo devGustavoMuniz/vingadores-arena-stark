@@ -4,6 +4,7 @@ namespace App\Orders\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Orders\Http\Requests\ReserveTicketRequest;
+use App\Orders\Models\Order;
 use App\Orders\Services\OrderService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -71,7 +72,7 @@ class OrderController extends Controller
      */
     public function success(int $orderId): Response
     {
-        $order = \App\Orders\Models\Order::with(['event', 'ticket'])
+        $order = Order::with(['event', 'ticket'])
             ->where('user_id', auth()->id())
             ->findOrFail($orderId);
 

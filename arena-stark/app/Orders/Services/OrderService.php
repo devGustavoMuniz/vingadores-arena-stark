@@ -2,6 +2,7 @@
 
 namespace App\Orders\Services;
 
+use App\Inventory\Models\Event;
 use App\Inventory\Models\Ticket;
 use App\Inventory\Services\InventoryService;
 use App\Notifications\Services\NotificationService;
@@ -62,10 +63,10 @@ class OrderService
             ]);
 
             // Decrement persisted stock
-            \App\Inventory\Models\Event::where('id', $eventId)
+            Event::where('id', $eventId)
                 ->decrement('available_tickets');
 
-            $event = \App\Inventory\Models\Event::findOrFail($eventId);
+            $event = Event::findOrFail($eventId);
 
             $order = Order::create([
                 'user_id' => $userId,

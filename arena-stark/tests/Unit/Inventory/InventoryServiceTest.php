@@ -2,6 +2,7 @@
 
 use App\Inventory\Models\Event;
 use App\Inventory\Services\InventoryService;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Redis;
 
@@ -33,7 +34,7 @@ describe('InventoryService', function () {
 
     it('reserves a ticket atomically and returns a token', function () {
         $event = Event::factory()->create(['available_tickets' => 10]);
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
 
         $service = app(InventoryService::class);
         $service->warmStockCache($event->id);
@@ -48,7 +49,7 @@ describe('InventoryService', function () {
 
     it('returns null when stock is zero', function () {
         $event = Event::factory()->create(['available_tickets' => 0]);
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
 
         $service = app(InventoryService::class);
         $service->warmStockCache($event->id);
@@ -60,7 +61,7 @@ describe('InventoryService', function () {
 
     it('confirms a reservation and removes it from redis', function () {
         $event = Event::factory()->create(['available_tickets' => 5]);
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
 
         $service = app(InventoryService::class);
         $service->warmStockCache($event->id);
