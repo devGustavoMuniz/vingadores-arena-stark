@@ -5,6 +5,7 @@ namespace App\Orders\Models;
 use App\Inventory\Models\Event;
 use App\Inventory\Models\Ticket;
 use App\Models\User;
+use Database\Factories\Orders\OrderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Order extends Model
 {
     use HasFactory;
+
+    protected static function newFactory(): OrderFactory
+    {
+        return OrderFactory::new();
+    }
 
     protected $table = 'orders';
 
