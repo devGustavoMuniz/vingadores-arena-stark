@@ -49,7 +49,7 @@ class EventSeeder extends Seeder
         $inventoryService = app(InventoryService::class);
 
         foreach ($events as $eventData) {
-            $event = Event::create($eventData);
+            $event = Event::firstOrCreate(['name' => $eventData['name']], $eventData);
             // Warm Redis cache with initial stock
             $inventoryService->warmStockCache($event->id);
         }
