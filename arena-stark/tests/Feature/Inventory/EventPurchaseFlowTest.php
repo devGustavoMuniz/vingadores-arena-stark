@@ -107,6 +107,9 @@ describe('Ticket reservation flow (end-to-end)', function () {
             'event_id' => $event->id,
             'status' => 'confirmed',
         ]);
+
+        // Verify the confirmation event was published to the notifications stream
+        expect(Redis::xlen('notifications:order-confirmed'))->toBe(1);
     });
 
     it('requires authentication to reserve a ticket', function () {

@@ -15,7 +15,7 @@ class NotificationService
      */
     public function notifyOrderConfirmed(Order $order): void
     {
-        Redis::xadd(self::STREAM_KEY, '*', [
+        Redis::xadd(self::STREAM_KEY, [
             'type' => 'order.confirmed',
             'order_id' => (string) $order->id,
             'user_id' => (string) $order->user_id,
@@ -23,21 +23,18 @@ class NotificationService
             'ticket_code' => $order->ticket->code ?? '',
             'amount' => (string) $order->amount,
             'occurred_at' => now()->toIso8601String(),
-        ]);
+        ], '*');
     }
 
     /**
-     * Reads pending notifications from the stream (for a consumer group).
-     * Returns an array of messages with their stream IDs.
+     * Reads the oldest notifications from the stream.
+     * Returns an array of messages keyed by their stream IDs.
+     *
+     * Uses XRANGE instead of XREAD because Predis does not apply the configured
+     * key prefix to XREAD stream names.
      */
     public function readPendingNotifications(int $count = 10): array
     {
-        $messages = Redis::xread([self::STREAM_KEY => '0-0'], $count);
-
-        if (empty($messages)) {
-            return [];
-        }
-
-        return $messages[self::STREAM_KEY] ?? [];
+        return Redis::xrange(self::STREAM_KEY, '-', '+', $count) ?: [];
     }
 }
