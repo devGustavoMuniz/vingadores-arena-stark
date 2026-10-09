@@ -37,7 +37,10 @@ Regras de comunicação entre contextos:
 - Um contexto **não acessa diretamente** os Models de outro contexto.
 - A comunicação entre contextos se dá via **Services** injetados ou via **Redis Streams**.
 - O `OrderService` pode invocar o `InventoryService`, mas não acessa `Inventory\Models`
-  diretamente além das referências de FK necessárias para o Eloquent.
+  diretamente além das referências de FK necessárias para o Eloquent (relações do
+  model `Order`). A persistência do ingresso vendido e a baixa de estoque no banco
+  ficam no `InventoryService::registerSale()`, que o `OrderService` chama dentro da
+  sua transação.
 
 ## Consequências
 
