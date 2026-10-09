@@ -6,11 +6,12 @@ services:
     container_name: arena-stark-app
     restart: unless-stopped
     working_dir: /var/www
+    # O bind mount esconde o vendor/ da imagem, entao instala as dependencias ao subir
+    command: sh -c "composer install --no-interaction --prefer-dist && php-fpm"
     volumes:
       - ./arena-stark:/var/www
     environment:
       APP_ENV: local
-      APP_KEY: ${APP_KEY}
       DB_CONNECTION: mysql
       DB_HOST: mysql
       DB_PORT: 3306
@@ -83,14 +84,19 @@ services:
       - arena-network
 
   node:
-    image: node:22-alpine
+    # Mesma imagem do app: o plugin Wayfinder do Vite precisa do PHP para gerar as rotas
+    build:
+      context: ./arena-stark
+      dockerfile: Dockerfile
     container_name: arena-stark-node
-    working_dir: /app
+    working_dir: /var/www
     volumes:
-      - ./arena-stark:/app
-    command: sh -c "npm ci && npm run dev"
+      - ./arena-stark:/var/www
+    command: sh -c "until [ -f vendor/autoload.php ]; do sleep 2; done && npm ci && npm run dev -- --host"
     ports:
       - "5173:5173"
+    depends_on:
+      - app
     networks:
       - arena-network
 
