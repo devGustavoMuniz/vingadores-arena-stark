@@ -3,6 +3,7 @@
 namespace App\Inventory\Services;
 
 use App\Inventory\Models\Event;
+use App\Inventory\Models\Ticket;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 
@@ -84,6 +85,25 @@ class InventoryService
         Redis::del($reservationKey);
 
         return json_decode($data, true);
+    }
+
+    /**
+     * Persists the definitive sale of one ticket: creates the sold ticket and
+     * decrements the stock stored in the database. Must run inside the caller's
+     * transaction. Returns the ticket with its event loaded.
+     */
+    public function registerSale(int $eventId): Ticket
+    {
+        $ticket = Ticket::create([
+            'event_id' => $eventId,
+            'code' => strtoupper(bin2hex(random_bytes(4))),
+            'status' => 'sold',
+            'reserved_until' => null,
+        ]);
+
+        Event::where('id', $eventId)->decrement('available_tickets');
+
+        return $ticket->load('event');
     }
 
     /**

@@ -88,4 +88,16 @@ describe('InventoryService', function () {
         $key = 'inventory:stock:'.$event->id;
         expect((int) Redis::get($key))->toBe(4);
     });
+
+    it('registers a sale: creates a sold ticket and decrements database stock', function () {
+        $event = Event::factory()->create(['available_tickets' => 10]);
+
+        $ticket = app(InventoryService::class)->registerSale($event->id);
+
+        expect($ticket->status)->toBe('sold')
+            ->and($ticket->event_id)->toBe($event->id)
+            ->and($ticket->code)->not->toBeEmpty()
+            ->and($ticket->relationLoaded('event'))->toBeTrue()
+            ->and($event->fresh()->available_tickets)->toBe(9);
+    });
 });

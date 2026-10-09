@@ -2,8 +2,6 @@
 
 namespace App\Orders\Services;
 
-use App\Inventory\Models\Event;
-use App\Inventory\Models\Ticket;
 use App\Inventory\Services\InventoryService;
 use App\Notifications\Services\NotificationService;
 use App\Orders\Models\Order;
@@ -55,25 +53,14 @@ class OrderService
         $eventId = (int) $reservation['event_id'];
 
         return DB::transaction(function () use ($eventId, $userId, $reservationToken) {
-            $ticket = Ticket::create([
-                'event_id' => $eventId,
-                'code' => strtoupper(bin2hex(random_bytes(4))),
-                'status' => 'sold',
-                'reserved_until' => null,
-            ]);
-
-            // Decrement persisted stock
-            Event::where('id', $eventId)
-                ->decrement('available_tickets');
-
-            $event = Event::findOrFail($eventId);
+            $ticket = $this->inventoryService->registerSale($eventId);
 
             $order = Order::create([
                 'user_id' => $userId,
                 'event_id' => $eventId,
                 'ticket_id' => $ticket->id,
                 'status' => 'confirmed',
-                'amount' => $event->price,
+                'amount' => $ticket->event->price,
                 'reservation_token' => $reservationToken,
             ]);
 
